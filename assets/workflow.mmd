@@ -1,0 +1,53 @@
+%%{init: {"theme":"neutral"}}%%
+flowchart TD
+  classDef check fill:#FFF4D6,stroke:#C99A1E,color:#18263B
+  classDef gen fill:#E3EEF8,stroke:#2F5D8A,color:#18263B
+  classDef human fill:#E6F4EC,stroke:#17885F,color:#18263B
+  classDef moved fill:#FFF4D6,stroke:#C8384F,stroke-width:3px,color:#18263B
+
+  subgraph W["階段一：建立 LLM Wiki（每篇來源跑一次）"]
+    A["① 取得資料<br/>讀全文、核對公式、檢查版權"]:::gen
+    B["② 先討論<br/>重點、頁面計畫<br/>★術語清單（方法＋實驗段）<br/>★跨來源矛盾檢查"]:::moved
+    U1{"使用者確認？"}:::human
+    C["③ 寫入 Wiki<br/>來源頁＋概念頁＋index＋log"]:::gen
+    D{"④ 自動 Lint<br/>lint.py：來源標記、連結、孤兒頁"}:::check
+    E{"⑤ 人工 Lint<br/>術語白話解釋、矛盾"}:::check
+  end
+  subgraph S["階段二：產生教學簡報"]
+    F["⑥ 查詢 Wiki → 大綱<br/>每張標註依據頁面"]:::gen
+    G{"⑦ 大綱檢查<br/>每張都有 Wiki 依據？使用者確認？"}:::human
+    H["⑧ 生成投影片<br/>data-wiki / data-src"]:::gen
+    I{"⑨ 事實回溯檢查<br/>check_slides.py：數字與來源<br/>＋人工：敘述、比喻是否被當事實"}:::check
+    J{"⑩ 渲染檢查<br/>check_render.py：溢出、公式、4 種螢幕<br/>＋截圖人工檢視"}:::check
+    K["⑪ 發佈 GitHub Pages"]:::gen
+  end
+  M["檢查工具自我驗證<br/>每次修改 lint／檢查腳本後，<br/>故意放入錯誤，確認抓得到"]:::check
+
+  A -- "失敗：拿不到全文" --> A
+  A --> B
+  B -- "發現缺口（如 S1 沒公式）" --> A
+  B --> U1
+  U1 -- "修正" --> B
+  U1 -- "同意" --> C
+  C --> D
+  D -- "內容錯" --> C
+  D -- "lint 誤報" --> M
+  D -- "通過" --> E
+  E -- "術語沒解釋" --> C
+  E -- "下一篇來源" --> A
+  E -- "全部完成" --> F
+  F --> G
+  G -- "缺依據" --> C
+  G -- "調整" --> F
+  G -- "通過" --> H
+  H --> I
+  I -- "敘述錯、標錯頁" --> H
+  I -- "Wiki 沒有這個事實" --> C
+  I -- "檢查太鬆" --> M
+  I -- "通過" --> J
+  J -- "版面問題" --> H
+  J -- "漏測螢幕尺寸" --> M
+  J -- "通過" --> K
+  M -.-> D
+  M -.-> I
+  M -.-> J

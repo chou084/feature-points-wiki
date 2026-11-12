@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>電腦怎麼在兩張照片裡找到同一個點？——特徵點入門</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EAF0F4; --panel:#FFFFFF; --ink:#18263B; --muted:#5A6B7D; --rule:#C5D1DB;
+  --point:#D99A1E; --ok:#17885F; --bad:#C8384F; --accent:#2F5D8A; --note:#F4EBD3;
+  --serif:"Noto Serif TC","Noto Serif CJK TC","Source Han Serif TC","PMingLiU",serif;
+  --sans:"Noto Sans TC","Noto Sans CJK TC","Source Han Sans TC","Microsoft JhengHei","PingFang TC",sans-serif;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#111A25; --panel:#1A2533; --ink:#E4ECF3; --muted:#9AAABB; --rule:#33435A;
+    --point:#F0B53A; --ok:#3CC08D; --bad:#F06A80; --accent:#82B2E0; --note:#2E2A1F; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#111A25; --panel:#1A2533; --ink:#E4ECF3; --muted:#9AAABB; --rule:#33435A;
+  --point:#F0B53A; --ok:#3CC08D; --bad:#F06A80; --accent:#82B2E0; --note:#2E2A1F; color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%;margin:0}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);overflow:hidden;-webkit-font-smoothing:antialiased}
+#viewport{position:fixed;inset:0;overflow:hidden}
+#stage{width:1280px;height:720px;position:absolute;left:50%;top:50%;transform-origin:center center}
+.slide{position:absolute;inset:0;padding:56px 72px 64px;display:none;flex-direction:column;background:var(--paper)}
+.slide.active{display:flex;animation:fade .35s ease}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.slide.active{animation:none}}
+h1,h2{font-family:var(--serif);font-weight:700;margin:0;line-height:1.25;letter-spacing:.01em}
+h1{font-size:54px}
+h2{font-size:38px;margin-bottom:22px}
+p,li{font-size:23px;line-height:1.6;margin:0}
+ul{margin:0;padding-left:1.1em}
+li+li{margin-top:8px}
+.lead{font-size:25px;color:var(--muted);margin-bottom:18px;max-width:34em}
+.body{flex:1;min-height:0;display:flex;gap:40px}
+.col{flex:1;min-width:0;display:flex;flex-direction:column;gap:16px}
+.col.narrow{flex:.85}
+.formula{background:var(--panel);border:1px solid var(--rule);border-radius:10px;padding:14px 18px;font-size:27px;text-align:center;overflow-x:auto}
+.formula math{font-size:1em}
+.note{background:var(--note);border-radius:8px;padding:10px 16px;font-size:20px;line-height:1.55}
+.note b{font-weight:700;margin-right:6px}
+.small{font-size:19px;color:var(--muted)}
+table{border-collapse:collapse;width:100%;font-size:20px;background:var(--panel)}
+th,td{border:1px solid var(--rule);padding:7px 10px;text-align:left;vertical-align:top;line-height:1.45}
+th{font-weight:700;background:color-mix(in srgb,var(--accent) 10%,var(--panel))}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.hl{color:var(--accent);font-weight:700}
+.good{color:var(--ok);font-weight:700}
+.badc{color:var(--bad);font-weight:700}
+svg text{font-family:var(--sans);fill:var(--ink)}
+.foot{position:absolute;left:72px;right:72px;bottom:18px;display:flex;justify-content:space-between;font-size:15px;color:var(--muted)}
+.cover{justify-content:center}
+.cover .kicker{font-size:22px;color:var(--muted);margin-top:18px}
+.lesson{border-left:5px solid var(--accent);padding:6px 0 6px 18px;font-size:24px;line-height:1.6}
+#chrome{position:fixed;left:0;right:0;bottom:0;padding:0 16px calc(10px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:12px;z-index:5}
+#dots{flex:1;display:flex;align-items:center;gap:0;height:24px;position:relative}
+#dots::before{content:"";position:absolute;left:0;right:0;top:50%;height:2px;background:var(--rule)}
+#dots button{position:relative;flex:1;height:24px;background:none;border:0;padding:0;cursor:pointer}
+#dots button::after{content:"";position:absolute;left:50%;top:50%;width:9px;height:9px;margin:-4.5px;border-radius:50%;background:var(--rule)}
+#dots button.seen::after{background:var(--point)}
+#dots button.cur::after{width:15px;height:15px;margin:-7.5px;background:var(--point);box-shadow:0 0 0 3px color-mix(in srgb,var(--point) 30%,transparent)}
+.nav{font:500 15px var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:6px 12px;cursor:pointer}
+#count{font-size:14px;color:var(--muted);min-width:4.5em;text-align:right;font-variant-numeric:tabular-nums}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+@media (max-width:600px){#dots{visibility:hidden}}
+@media print{
+  body{overflow:visible} #chrome{display:none}
+  #viewport{position:static;display:block;overflow:visible} #stage{position:static;transform:none!important}
+  .slide{display:flex!important;position:relative;page-break-after:always;width:1280px;height:720px}
+  @page{size:1280px 720px;margin:0}
+}
+</style>
+</head>
+<body>
+<div id="viewport"><div id="stage">
+
+<!-- 1 封面 -->
+<section class="slide cover" data-wiki="feature-matching" data-src="S1,S2">
+  <svg viewBox="0 0 1136 300" width="1136" height="300" role="img" aria-label="兩張照片中的特徵點以綠線配對，一條紅線是配錯的例子" data-nocheck>
+    <rect x="0" y="10" width="470" height="280" rx="6" fill="var(--panel)" stroke="var(--rule)"/>
+    <g fill="none" stroke="var(--muted)" stroke-width="3">
+      <rect x="60" y="80" width="140" height="190"/><rect x="230" y="40" width="190" height="230"/>
+      <line x1="260" y1="90" x2="390" y2="90"/><line x1="260" y1="150" x2="390" y2="150"/><line x1="260" y1="210" x2="390" y2="210"/>
+    </g>
+    <g transform="translate(666 30) rotate(-8 230 140) scale(.82)">
+      <rect x="0" y="0" width="470" height="300" rx="6" fill="var(--panel)" stroke="var(--rule)"/>
+      <g fill="none" stroke="var(--muted)" stroke-width="3">
+        <rect x="60" y="80" width="140" height="190"/><rect x="230" y="40" width="190" height="230"/>
+        <line x1="260" y1="90" x2="390" y2="90"/><line x1="260" y1="150" x2="390" y2="150"/><line x1="260" y1="210" x2="390" y2="210"/>
+      </g>
+    </g>
+    <g stroke-width="2.5">
+      <line x1="60" y1="80" x2="711" y2="111" stroke="var(--ok)"/>
+      <line x1="200" y1="80" x2="824" y2="95" stroke="var(--ok)"/>
+      <line x1="230" y1="40" x2="842" y2="59" stroke="var(--ok)"/>
+      <line x1="420" y1="40" x2="996" y2="38" stroke="var(--ok)"/>
+      <line x1="420" y1="270" x2="1023" y2="225" stroke="var(--ok)"/>
+      <line x1="390" y1="150" x2="934" y2="183" stroke="var(--bad)" stroke-dasharray="7 5"/>
+    </g>
+    <g fill="var(--point)">
+      <circle cx="60" cy="80" r="7"/><circle cx="200" cy="80" r="7"/><circle cx="230" cy="40" r="7"/><circle cx="420" cy="40" r="7"/><circle cx="420" cy="270" r="7"/><circle cx="390" cy="150" r="7"/>
+      <circle cx="711" cy="111" r="7"/><circle cx="824" cy="95" r="7"/><circle cx="842" cy="59" r="7"/><circle cx="996" cy="38" r="7"/><circle cx="1023" cy="225" r="7"/><circle cx="934" cy="183" r="7"/>
+    </g>
+  </svg>
+  <h1 style="margin-top:34px">電腦怎麼在兩張照片裡找到同一個點？</h1>
+  <p class="kicker">特徵點偵測與描述入門：從 Harris 角點到 LiftFeat</p>
+  <p class="small" style="margin-top:10px">綠線是正確配對，紅色虛線是配錯的。這份簡報的每張投影片，都能回溯到 LLM Wiki 裡的頁面。</p>
+</section>
+
+<!-- 2 -->
+<section class="slide" data-wiki="feature-point" data-src="S1">
+  <h2>為什麼電腦需要「特徵點」？</h2>
+  <div class="body">
+    <div class="col">
+      <p class="lead">玩拼圖時，我們會找有特色的圖案，去對照每塊拼片該放哪裡。</p>
+      <p>電腦想做的事也一樣，只是對象換成照片：</p>
+      <ul>
+        <li>把好幾張照片拼成一張全景圖</li>
+        <li>從很多張照片重建出 3D 模型</li>
+      </ul>
+      <p>這些都要先能在不同照片裡，認出<span class="hl">同一個地方</span>。</p>
+    </div>
+    <div class="col narrow">
+      <table>
+        <tr><th>好特徵的三個條件</th></tr>
+        <tr><td><b>獨特</b>：不會和別處搞混</td></tr>
+        <tr><td><b>容易追蹤</b>：照片變了還找得到</td></tr>
+        <tr><td><b>容易比較</b>：能拿來和別張圖對照</td></tr>
+      </table>
+      <p class="small">人憑直覺就能指出好特徵；難處是把這種直覺變成電腦能執行的規則。</p>
+    </div>
+  </div>
+</section>
+
+<!-- 3 -->
+<section class="slide" data-wiki="corner,feature-point" data-src="S1">
+  <h2>好特徵長什麼樣？把小窗格推一推</h2>
+  <p class="lead">拿一個小窗格蓋在影像上，往各個方向推一點點，看窗格裡的內容變了多少。</p>
+  <svg viewBox="0 0 1136 260" width="1136" height="260" role="img" aria-label="平坦、邊緣、角點三種區域的小窗格示意" data-nocheck>
+    <defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--accent)"/></marker></defs>
+    <g>
+      <rect x="20" y="20" width="320" height="200" fill="var(--panel)" stroke="var(--rule)"/>
+      <rect x="140" y="80" width="80" height="80" fill="none" stroke="var(--accent)" stroke-width="3" stroke-dasharray="6 4"/>
+      <g stroke="var(--accent)" stroke-width="3" marker-end="url(#ar)"><line x1="180" y1="80" x2="180" y2="40"/><line x1="220" y1="120" x2="262" y2="120"/><line x1="140" y1="120" x2="98" y2="120"/><line x1="180" y1="160" x2="180" y2="200"/></g>
+      <text x="180" y="248" text-anchor="middle" font-size="22">平坦區</text>
+    </g>
+    <g transform="translate(398 0)">
+      <rect x="20" y="20" width="320" height="200" fill="var(--panel)" stroke="var(--rule)"/>
+      <rect x="20" y="20" width="160" height="200" fill="var(--muted)" opacity=".55"/>
+      <rect x="140" y="80" width="80" height="80" fill="none" stroke="var(--accent)" stroke-width="3" stroke-dasharray="6 4"/>
+      <g stroke="var(--accent)" stroke-width="3" marker-end="url(#ar)"><line x1="180" y1="80" x2="180" y2="40"/><line x1="180" y1="160" x2="180" y2="200"/></g>
+      <g stroke="var(--bad)" stroke-width="3" marker-end="url(#ar)"><line x1="220" y1="120" x2="262" y2="120"/><line x1="140" y1="120" x2="98" y2="120"/></g>
+      <text x="180" y="248" text-anchor="middle" font-size="22">邊緣</text>
+    </g>
+    <g transform="translate(796 0)">
+      <rect x="20" y="20" width="320" height="200" fill="var(--panel)" stroke="var(--rule)"/>
+      <rect x="20" y="120" width="160" height="100" fill="var(--muted)" opacity=".55"/>
+      <rect x="140" y="80" width="80" height="80" fill="none" stroke="var(--accent)" stroke-width="3" stroke-dasharray="6 4"/>
+      <g stroke="var(--bad)" stroke-width="3" marker-end="url(#ar)"><line x1="180" y1="80" x2="180" y2="40"/><line x1="220" y1="120" x2="262" y2="120"/><line x1="140" y1="120" x2="98" y2="120"/><line x1="180" y1="160" x2="180" y2="200"/></g>
+      <circle cx="180" cy="120" r="8" fill="var(--point)"/>
+      <text x="180" y="248" text-anchor="middle" font-size="22">角點</text>
+    </g>
+  </svg>
+  <table style="margin-top:14px">
+    <tr><th>區域</th><th>窗格移動後</th><th>能不能精確定位</th></tr>
+    <tr><td>平坦區</td><td>往哪移都一樣</td><td>不能</td></tr>
+    <tr><td>邊緣</td><td>只有垂直於邊緣移動才變（紅色箭頭），沿著邊緣移動不變</td><td>只能定出大概位置</td></tr>
+    <tr><td>角點</td><td>往哪移都變</td><td class="good">能，所以是好特徵</td></tr>
+  </table>
+</section>
+
+<!-- 4 -->
+<section class="slide" data-wiki="feature-detection,feature-description,feature-matching" data-src="S1,S2">
+  <h2>找到同一個點，要分三步</h2>
+  <svg viewBox="0 0 1136 120" width="1136" height="120" role="img" aria-label="偵測、描述、匹配三步驟流程" data-nocheck>
+    <defs><marker id="ar2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs>
+    <g font-size="28" text-anchor="middle">
+      <rect x="10" y="20" width="320" height="80" rx="10" fill="var(--panel)" stroke="var(--accent)" stroke-width="2"/><text x="170" y="70" font-weight="700">偵測</text>
+      <rect x="408" y="20" width="320" height="80" rx="10" fill="var(--panel)" stroke="var(--accent)" stroke-width="2"/><text x="568" y="70" font-weight="700">描述</text>
+      <rect x="806" y="20" width="320" height="80" rx="10" fill="var(--panel)" stroke="var(--accent)" stroke-width="2"/><text x="966" y="70" font-weight="700">匹配</text>
+    </g>
+    <g stroke="var(--muted)" stroke-width="3" marker-end="url(#ar2)"><line x1="336" y1="60" x2="400" y2="60"/><line x1="734" y1="60" x2="798" y2="60"/></g>
+  </svg>
+  <div class="body" style="margin-top:18px">
+    <div class="col"><p><b>偵測</b>：找出特徵點「在哪裡」。</p><p class="small">找那些稍微移動一下、外觀就變化最大的區域。</p></div>
+    <div class="col"><p><b>描述</b>：記下它「長什麼樣」。</p><p class="small">就像人會說「上面是藍天、下面是大樓、大樓上有玻璃」，電腦也要把周圍區域描述成可以比對的形式。</p></div>
+    <div class="col"><p><b>匹配</b>：到另一張圖找「描述最像」的那個點。</p><p class="small">配好對之後，就能對齊、拼接影像。</p></div>
+  </div>
+</section>
+
+<!-- 5 -->
+<section class="slide" data-wiki="harris-corner,corner" data-src="S7">
+  <h2>Harris 角點 ①：把「推窗格」寫成數學</h2>
+  <p class="lead">Harris 與 Stephens 在 1988 年，把「角點往各方向移動都會變化」寫成了一個式子。</p>
+  <div class="body">
+    <div class="col">
+      <div class="formula" style="font-size:23px">
+        <math display="block"><mi>E</mi><mo>(</mo><mi>u</mi><mo>,</mo><mi>v</mi><mo>)</mo><mo>=</mo><munder><mo>∑</mo><mrow><mi>x</mi><mo>,</mo><mi>y</mi></mrow></munder><mi>w</mi><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>)</mo><msup><mrow><mo>[</mo><mi>I</mi><mo>(</mo><mi>x</mi><mo>+</mo><mi>u</mi><mo>,</mo><mi>y</mi><mo>+</mo><mi>v</mi><mo>)</mo><mo>−</mo><mi>I</mi><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>)</mo><mo>]</mo></mrow><mn>2</mn></msup></math>
+      </div>
+      <p>意思是：把窗格移動 (u, v)，每個像素前後的亮度差平方後加起來。</p>
+      <p><span class="hl">角點</span>就是 E 往各個方向都很大的地方。</p>
+    </div>
+    <div class="col narrow">
+      <table>
+        <tr><th>符號</th><th>白話意思</th></tr>
+        <tr><td><math><mi>I</mi><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>)</mo></math></td><td>位置 (x, y) 的亮度</td></tr>
+        <tr><td><math><mi>I</mi><mo>(</mo><mi>x</mi><mo>+</mo><mi>u</mi><mo>,</mo><mi>y</mi><mo>+</mo><mi>v</mi><mo>)</mo></math></td><td>窗格移動 (u, v) 後的亮度</td></tr>
+        <tr><td><math><mi>w</mi><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>)</mo></math></td><td>窗格函數，決定每個像素的權重，可用矩形或高斯</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- 6 -->
+<section class="slide" data-wiki="harris-corner" data-src="S7">
+  <h2>Harris 角點 ②：用兩個特徵值判斷</h2>
+  <div class="body">
+    <div class="col">
+      <div class="formula">
+        <math display="block"><mi>M</mi><mo>=</mo><munder><mo>∑</mo><mrow><mi>x</mi><mo>,</mo><mi>y</mi></mrow></munder><mi>w</mi><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>)</mo><mrow><mo>[</mo><mtable><mtr><mtd><msub><mi>I</mi><mi>x</mi></msub><msub><mi>I</mi><mi>x</mi></msub></mtd><mtd><msub><mi>I</mi><mi>x</mi></msub><msub><mi>I</mi><mi>y</mi></msub></mtd></mtr><mtr><mtd><msub><mi>I</mi><mi>x</mi></msub><msub><mi>I</mi><mi>y</mi></msub></mtd><mtd><msub><mi>I</mi><mi>y</mi></msub><msub><mi>I</mi><mi>y</mi></msub></mtd></mtr></mtable><mo>]</mo></mrow></math>
+      </div>
+      <p class="small"><math><msub><mi>I</mi><mi>x</mi></msub></math>、<math><msub><mi>I</mi><mi>y</mi></msub></math>：亮度沿水平、垂直方向的變化（導數），可用 Sobel 算出。用泰勒展開，E 可以近似成由這個矩陣 M 決定的式子。</p>
+      <div class="formula">
+        <math display="block"><mi>R</mi><mo>=</mo><mo>det</mo><mo>(</mo><mi>M</mi><mo>)</mo><mo>−</mo><mi>k</mi><msup><mrow><mo>(</mo><mo>trace</mo><mo>(</mo><mi>M</mi><mo>)</mo><mo>)</mo></mrow><mn>2</mn></msup></math>
+      </div>
+      <p class="small">λ₁、λ₂ 是 M 的兩個特徵值；det(M) = λ₁λ₂，trace(M) = λ₁ + λ₂。</p>
+    </div>
+    <div class="col narrow">
+      <svg viewBox="0 0 420 330" width="420" height="330" role="img" aria-label="以兩個特徵值為座標軸，劃分平坦、邊緣、角點三區" data-nocheck>
+        <rect x="60" y="20" width="340" height="260" fill="var(--panel)" stroke="var(--rule)"/>
+        <path d="M60 280 L60 20 L150 20 L150 190 L400 190 L400 280 Z" fill="var(--muted)" opacity=".18"/>
+        <path d="M150 20 L400 20 L400 190 L150 190 Z" fill="var(--ok)" opacity=".18"/>
+        <path d="M60 280 L60 190 L150 190 L150 280 Z" fill="var(--paper)"/>
+        <text x="105" y="242" text-anchor="middle" font-size="20">平坦</text>
+        <text x="105" y="110" text-anchor="middle" font-size="20">邊緣</text>
+        <text x="275" y="240" text-anchor="middle" font-size="20">邊緣</text>
+        <text x="275" y="110" text-anchor="middle" font-size="22" font-weight="700" style="fill:var(--ok)">角點</text>
+        <text x="230" y="314" text-anchor="middle" font-size="18">λ₁ →</text>
+        <text x="28" y="150" text-anchor="middle" font-size="18" transform="rotate(-90 28 150)">λ₂ →</text>
+      </svg>
+      <table>
+        <tr><th>情況</th><th>判斷</th></tr>
+        <tr><td>兩個都小（|R| 小）</td><td>平坦</td></tr>
+        <tr><td>一個遠大於另一個（R &lt; 0）</td><td>邊緣</td></tr>
+        <tr><td>兩個都大且差不多（R 大）</td><td class="good">角點</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- 7 -->
+<section class="slide" data-wiki="harris-corner,sift,feature-detection" data-src="S2">
+  <h2>Harris 的弱點：照片一縮放就認不得</h2>
+  <div class="body">
+    <div class="col">
+      <p>Harris 只在<span class="hl">一個固定的尺度</span>下找角點。</p>
+      <p>對影像縮放非常敏感，不適合拿來匹配大小不同的照片。</p>
+      <p>它雖然叫「角點」偵測器，其實選出的是「在預設尺度下、各方向梯度都大」的位置，不一定是真正的角。</p>
+      <div class="lesson">這正是 SIFT 被提出的動機：<br>在<b>所有尺度</b>上都找一遍。</div>
+    </div>
+    <div class="col narrow">
+      <svg viewBox="0 0 420 300" width="420" height="300" role="img" aria-label="同一棟大樓近拍時很大，遠拍時很小" data-nocheck>
+        <rect x="10" y="10" width="190" height="240" fill="var(--panel)" stroke="var(--rule)"/>
+        <rect x="30" y="40" width="150" height="210" fill="none" stroke="var(--muted)" stroke-width="3"/>
+        <circle cx="30" cy="40" r="7" fill="var(--point)"/>
+        <rect x="220" y="10" width="190" height="240" fill="var(--panel)" stroke="var(--rule)"/>
+        <rect x="290" y="170" width="44" height="80" fill="none" stroke="var(--muted)" stroke-width="3"/>
+        <circle cx="290" cy="170" r="7" fill="var(--point)"/>
+        <text x="105" y="284" text-anchor="middle" font-size="19">近拍</text>
+        <text x="315" y="284" text-anchor="middle" font-size="19">遠拍</text>
+      </svg>
+      <div class="note"><b>比喻</b>同一棟大樓，近拍時佔滿畫面、遠拍時只有一小塊。「尺度不變」就是不管它在照片裡大或小，都能找到並認出同一個角。</div>
+    </div>
+  </div>
+</section>
+
+<!-- 8 -->
+<section class="slide" data-wiki="scale-space,sift" data-src="S2">
+  <h2>SIFT ①：用一疊模糊影像，在所有尺度找點</h2>
+  <div class="body">
+    <div class="col">
+      <div class="formula"><math display="block"><mi>L</mi><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>,</mo><mi>σ</mi><mo>)</mo><mo>=</mo><mi>G</mi><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>,</mo><mi>σ</mi><mo>)</mo><mo>∗</mo><mi>I</mi><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>)</mo></math></div>
+      <div class="formula"><math display="block"><mi>D</mi><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>,</mo><mi>σ</mi><mo>)</mo><mo>=</mo><mi>L</mi><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>,</mo><mi>k</mi><mi>σ</mi><mo>)</mo><mo>−</mo><mi>L</mi><mo>(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo>,</mo><mi>σ</mi><mo>)</mo></math></div>
+      <ul>
+        <li>用不同強度 σ 的高斯模糊原圖 I，得到一疊影像 L（尺度空間）。</li>
+        <li>相鄰兩層相減，就是 DoG（高斯差分）D，只需做影像減法。</li>
+        <li>每個點和同層 8 個、上下層各 9 個，共 26 個鄰居比較；比全部大或全部小才是候選點。</li>
+      </ul>
+    </div>
+    <div class="col narrow">
+      <svg viewBox="0 0 420 260" width="420" height="260" role="img" aria-label="越往上越模糊的影像堆疊，以及和 26 個鄰居比較" data-nocheck>
+        <g fill="var(--panel)" stroke="var(--accent)" stroke-width="2">
+          <path d="M40 210 L240 210 L300 170 L100 170 Z" opacity="1"/>
+          <path d="M40 160 L240 160 L300 120 L100 120 Z" opacity=".85"/>
+          <path d="M40 110 L240 110 L300 70 L100 70 Z" opacity=".7"/>
+        </g>
+        <circle cx="170" cy="140" r="7" fill="var(--point)"/>
+        <g fill="var(--muted)"><circle cx="150" cy="140" r="3.5"/><circle cx="190" cy="140" r="3.5"/><circle cx="170" cy="190" r="3.5"/><circle cx="170" cy="90" r="3.5"/></g>
+        <text x="320" y="96" font-size="17">σ 大，較模糊</text>
+        <text x="320" y="196" font-size="17">σ 小，較清楚</text>
+      </svg>
+      <div class="note"><b>比喻</b>模糊越強，細小紋理越看不到、只剩大結構，有點像從越來越遠的地方看同一張照片。</div>
+      <p class="small">σ 每增加一倍稱為一個 octave，之後把影像縮小一半繼續；每個 octave 取 3 個尺度時，重複偵測率最高。</p>
+    </div>
+  </div>
+</section>
+
+<!-- 9 -->
+<section class="slide" data-wiki="sift,feature-description" data-src="S2">
+  <h2>SIFT ②：給每個點一個方向和一張「指紋卡」</h2>
+  <div class="body">
+    <div class="col">
+      <p><b>方向</b>：統計周圍的梯度方向，做成 36 格的直方圖，取最高峰當主方向。之後都以這個方向為基準來描述，所以<span class="hl">轉了也認得</span>。</p>
+      <p><b>描述子</b>：把周圍分成 4×4 個小區塊，每塊統計 8 個方向的梯度。</p>
+      <div class="formula" style="font-size:30px">4 × 4 × 8 = <b>128</b> 維向量</div>
+      <p class="small">向量會正規化成長度 1，讓整體對比度的變化被抵消。一張 500×500 的影像通常可得到約 2000 個穩定特徵。</p>
+    </div>
+    <div class="col narrow">
+      <svg viewBox="0 0 360 360" width="360" height="360" role="img" aria-label="4 乘 4 的小區塊，每塊有 8 個方向的梯度統計" data-nocheck>
+        <g stroke="var(--rule)" stroke-width="2" fill="var(--panel)">
+          <rect x="20" y="20" width="320" height="320"/>
+          <line x1="100" y1="20" x2="100" y2="340"/><line x1="180" y1="20" x2="180" y2="340"/><line x1="260" y1="20" x2="260" y2="340"/>
+          <line x1="20" y1="100" x2="340" y2="100"/><line x1="20" y1="180" x2="340" y2="180"/><line x1="20" y1="260" x2="340" y2="260"/>
+        </g>
+        <g id="star" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round">
+          <line x1="60" y1="60" x2="88" y2="60"/><line x1="60" y1="60" x2="76" y2="44"/><line x1="60" y1="60" x2="60" y2="38"/><line x1="60" y1="60" x2="50" y2="50"/><line x1="60" y1="60" x2="44" y2="60"/><line x1="60" y1="60" x2="47" y2="73"/><line x1="60" y1="60" x2="60" y2="72"/><line x1="60" y1="60" x2="78" y2="78"/>
+        </g>
+        <use href="#star" x="80" y="0"/><use href="#star" x="160" y="0"/><use href="#star" x="240" y="0"/>
+        <use href="#star" x="0" y="80"/><use href="#star" x="80" y="80"/><use href="#star" x="160" y="80"/><use href="#star" x="240" y="80"/>
+        <use href="#star" x="0" y="160"/><use href="#star" x="80" y="160"/><use href="#star" x="160" y="160"/><use href="#star" x="240" y="160"/>
+        <use href="#star" x="0" y="240"/><use href="#star" x="80" y="240"/><use href="#star" x="160" y="240"/><use href="#star" x="240" y="240"/>
+        <circle cx="180" cy="180" r="8" fill="var(--point)"/>
+      </svg>
+      <div class="note"><b>比喻</b>梯度就是亮度變化最快的方向與幅度；128 維向量就像一張寫了 128 個數字的指紋卡。</div>
+    </div>
+  </div>
+</section>
+
+<!-- 10 -->
+<section class="slide" data-wiki="feature-matching" data-src="S2">
+  <h2>匹配：找最近的，但要防「分不清」</h2>
+  <div class="body">
+    <div class="col">
+      <p>用描述子之間的<b>歐氏距離</b>比較，距離最近的就是最佳候選（最近鄰）。</p>
+      <p><span class="badc">問題</span>：很多點來自背景，在另一張圖根本沒有對應，但最近鄰一定會找到「某一個」。</p>
+      <p><span class="good">解法</span>：比值檢驗</p>
+      <div class="formula"><math display="block"><mfrac><msub><mi>d</mi><mn>1</mn></msub><msub><mi>d</mi><mn>2</mn></msub></mfrac><mo>&gt;</mo><mn>0.8</mn><mspace width="0.6em"/><mo>⇒</mo><mspace width="0.6em"/><mtext>丟掉這組配對</mtext></math></div>
+      <p class="small">d₁、d₂：到最近、第二近的距離。效果：去掉 90% 的錯誤配對，只損失不到 5% 的正確配對。</p>
+    </div>
+    <div class="col narrow">
+      <svg viewBox="0 0 420 260" width="420" height="260" role="img" aria-label="正確配對時最近鄰明顯比第二近；模稜兩可時兩者差不多" data-nocheck>
+        <circle cx="60" cy="70" r="9" fill="var(--point)"/>
+        <line x1="60" y1="70" x2="150" y2="70" stroke="var(--ok)" stroke-width="3"/><circle cx="150" cy="70" r="7" fill="var(--muted)"/>
+        <line x1="60" y1="70" x2="380" y2="70" stroke="var(--rule)" stroke-width="3" stroke-dasharray="6 5"/><circle cx="380" cy="70" r="7" fill="var(--muted)"/>
+        <text x="20" y="120" font-size="18">最近的明顯比較近 → 保留</text>
+        <circle cx="60" cy="180" r="9" fill="var(--point)"/>
+        <line x1="60" y1="180" x2="290" y2="180" stroke="var(--bad)" stroke-width="3"/><circle cx="290" cy="180" r="7" fill="var(--muted)"/>
+        <line x1="60" y1="180" x2="320" y2="180" stroke="var(--rule)" stroke-width="3" stroke-dasharray="6 5" transform="rotate(-9 60 180)"/><circle cx="317" cy="139" r="7" fill="var(--muted)"/>
+        <text x="20" y="232" font-size="18">第一、第二名差不多 → 丟掉</text>
+      </svg>
+      <div class="note"><b>比喻</b>如果第一名和第二名一樣像，代表電腦其實分不清，那就乾脆不配。</div>
+    </div>
+  </div>
+</section>
+
+<!-- 11 -->
+<section class="slide" data-wiki="orb,harris-corner" data-src="S3">
+  <h2>ORB ①：為了速度，換上兩個快零件</h2>
+  <div class="body">
+    <div class="col">
+      <p>SIFT 很準但很慢，手機等低功耗裝置跑不動。ORB = <b>O</b>riented FAST + <b>R</b>otated <b>B</b>RIEF。</p>
+      <ul>
+        <li><b>FAST</b>：只比較中心像素和周圍一圈的亮度差，所以很快。</li>
+        <li>FAST 在邊緣上也會有很強的反應 → 借用 <span class="hl">Harris 分數</span>排序，只留前 N 個。</li>
+        <li>尺度：在影像金字塔的每一層各做一次。</li>
+      </ul>
+      <table style="margin-top:6px">
+        <tr><th>每張 640×480 影像</th><th class="num">ORB</th><th class="num">SURF</th><th class="num">SIFT</th></tr>
+        <tr><td>時間（ms）</td><td class="num good">15.3</td><td class="num">217.3</td><td class="num">5228.7</td></tr>
+      </table>
+    </div>
+    <div class="col narrow">
+      <p><b>方向：強度質心</b></p>
+      <div class="formula"><math display="block"><mi>θ</mi><mo>=</mo><mo>atan2</mo><mo>(</mo><msub><mi>m</mi><mn>01</mn></msub><mo>,</mo><msub><mi>m</mi><mn>10</mn></msub><mo>)</mo></math></div>
+      <svg viewBox="0 0 300 190" width="300" height="190" role="img" aria-label="角點區塊的亮度重心偏向亮的一側，從中心指向重心就是方向" data-nocheck>
+        <circle cx="150" cy="95" r="85" fill="var(--panel)" stroke="var(--rule)" stroke-width="2"/>
+        <path d="M150 95 L235 95 A85 85 0 0 0 150 10 Z" fill="var(--point)" opacity=".35"/>
+        <line x1="150" y1="95" x2="190" y2="57" stroke="var(--accent)" stroke-width="4"/>
+        <circle cx="150" cy="95" r="6" fill="var(--ink)"/><circle cx="192" cy="55" r="7" fill="var(--accent)"/>
+        <text x="122" y="122" font-size="17">O</text><text x="202" y="52" font-size="17">C</text>
+      </svg>
+      <div class="note"><b>比喻</b>把亮度當重量，C 是區塊的重心；角點一邊亮一邊暗，重心會偏向亮的那側，O→C 就是這個點的方向。</div>
+    </div>
+  </div>
+</section>
+
+<!-- 12 -->
+<section class="slide" data-wiki="binary-descriptor,orb" data-src="S3">
+  <h2>ORB ②：用一串 0 和 1 當描述子</h2>
+  <div class="body">
+    <div class="col">
+      <p><b>BRIEF 二元測試</b>：在平滑過的區塊裡挑兩個點比亮度。</p>
+      <div class="formula"><math display="block"><mi>τ</mi><mo>(</mo><mi mathvariant="bold">p</mi><mo>;</mo><mi mathvariant="bold">x</mi><mo>,</mo><mi mathvariant="bold">y</mi><mo>)</mo><mo>=</mo><mrow><mo>{</mo><mtable columnalign="left"><mtr><mtd><mn>1</mn></mtd><mtd><mi mathvariant="bold">p</mi><mo>(</mo><mi mathvariant="bold">x</mi><mo>)</mo><mo>&lt;</mo><mi mathvariant="bold">p</mi><mo>(</mo><mi mathvariant="bold">y</mi><mo>)</mo></mtd></mtr><mtr><mtd><mn>0</mn></mtd><mtd><mi mathvariant="bold">p</mi><mo>(</mo><mi mathvariant="bold">x</mi><mo>)</mo><mo>≥</mo><mi mathvariant="bold">p</mi><mo>(</mo><mi mathvariant="bold">y</mi><mo>)</mo></mtd></mtr></mtable></mrow></math></div>
+      <p>重複 256 次，得到 256 位元的字串。比較兩串時用 <b>Hamming 距離</b>：數有幾位不同。</p>
+      <div class="note"><b>比喻</b>1011 和 1001 只有第 3 位不同，Hamming 距離就是 1。電腦算這種距離非常快。</div>
+    </div>
+    <div class="col narrow">
+      <p><b>BRIEF 的問題</b>：怕旋轉，轉超過約 10 度效果就大幅下降。</p>
+      <p><b>ORB 的修正（rBRIEF）</b></p>
+      <ul>
+        <li>把比較點對依方向 θ 一起旋轉。</li>
+        <li>但旋轉後位元變得好預測、彼此重複 → 從 205,590 組候選中，挑出 256 組「最難預測又不重複」的比較。</li>
+      </ul>
+      <div class="note"><b>比喻</b>一個幾乎永遠回答 1 的比較，就像永遠答「是」的問題，問了等於沒問。</div>
+    </div>
+  </div>
+</section>
+
+<!-- 13 -->
+<section class="slide" data-wiki="noise-robustness-conflict" data-src="S2,S3">
+  <h2>讀論文的陷阱 ①：結論相反時，先看實驗條件</h2>
+  <p class="lead">SIFT 抗不抗雜訊？兩篇論文給了不同的答案。</p>
+  <table>
+    <tr><th>比較項目</th><th>S2（Lowe 2004，SIFT 作者）</th><th>S3（Rublee 2011，ORB 作者）</th></tr>
+    <tr><td>結論</td><td>SIFT 即使在大量像素雜訊下仍很穩</td><td>SIFT 每多加 5 單位雜訊，正確配對比例約掉 10%；ORB 下降慢得多</td></tr>
+    <tr><td>雜訊種類</td><td>均勻分布雜訊，像素值範圍 [0,1]，最多 ±10%</td><td>對 8 位元影像加高斯雜訊，強度 0 到 25</td></tr>
+    <tr><td>同時加的變化</td><td>隨機旋轉與縮放</td><td>0 到 360 度平面內旋轉</td></tr>
+    <tr><td>衡量指標</td><td>在 4 萬個關鍵點資料庫中，最近鄰是否正確</td><td>每張約 500 個點暴力匹配後的正確配對比例</td></tr>
+  </table>
+  <div class="lesson" style="margin-top:18px">兩篇的雜訊種類、強度單位、衡量指標都不同，不能直接比。<br>看到「A 比 B 好」，先問：在什麼條件下測的？用什麼指標？是誰測的？</div>
+</section>
+
+<!-- 14 -->
+<section class="slide" data-wiki="superpoint,self-supervised-learning,homography" data-src="S4">
+  <h2>SuperPoint ①：沒有標準答案，就自己做</h2>
+  <div class="body">
+    <div class="col">
+      <p>「什麼是興趣點」沒有明確定義，不像嘴角、腳踝那樣能請人標註。所以 SuperPoint 用<b>自監督</b>：讓系統自己產生訓練標籤。</p>
+      <svg viewBox="0 0 640 110" width="640" height="110" role="img" aria-label="三階段：合成圖形訓練、Homographic Adaptation 產生偽標籤、聯合訓練" data-nocheck>
+        <defs><marker id="ar3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs>
+        <g font-size="17" text-anchor="middle">
+          <rect x="0" y="10" width="190" height="90" rx="8" fill="var(--panel)" stroke="var(--accent)"/><text x="95" y="48">合成圖形上</text><text x="95" y="74">訓練 MagicPoint</text>
+          <rect x="225" y="10" width="190" height="90" rx="8" fill="var(--panel)" stroke="var(--accent)"/><text x="320" y="48">真實照片上</text><text x="320" y="74">產生偽標籤</text>
+          <rect x="450" y="10" width="190" height="90" rx="8" fill="var(--panel)" stroke="var(--accent)"/><text x="545" y="48">同時訓練</text><text x="545" y="74">偵測＋描述</text>
+        </g>
+        <g stroke="var(--muted)" stroke-width="2.5" marker-end="url(#ar3)"><line x1="192" y1="55" x2="220" y2="55"/><line x1="417" y1="55" x2="445" y2="55"/></g>
+      </svg>
+      <p class="small">合成資料集由三角形、四邊形、線段、橢圓等組成，角點位置毫無歧義。</p>
+      <div class="note"><b>比喻</b>偽標籤就是機器自己猜、再當成標準答案來練習的標籤；不保證全對，但數量多又不用人力。</div>
+    </div>
+    <div class="col">
+      <p><b>Homographic Adaptation</b>：把照片用隨機的單應性扭曲很多次，各自找點，轉回原圖後平均。</p>
+      <div class="formula"><math display="block"><mover><mi>F</mi><mo>^</mo></mover><mo>(</mo><mi>I</mi><mo>)</mo><mo>=</mo><mfrac><mn>1</mn><msub><mi>N</mi><mi>h</mi></msub></mfrac><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><msub><mi>N</mi><mi>h</mi></msub></munderover><msubsup><mi mathvariant="script">H</mi><mi>i</mi><mrow><mo>−</mo><mn>1</mn></mrow></msubsup><msub><mi>f</mi><mi>θ</mi></msub><mo>(</mo><msub><mi mathvariant="script">H</mi><mi>i</mi></msub><mo>(</mo><mi>I</mi><mo>)</mo><mo>)</mo></math></div>
+      <table>
+        <tr><th>扭曲次數</th><th>重複率提升</th></tr>
+        <tr><td>100 次</td><td>21%</td></tr>
+        <tr><td>1000 次</td><td>22%，超過 100 次效益很小</td></tr>
+      </table>
+      <div class="note"><b>比喻</b>單應性就像把一張照片拿在手上平移、旋轉、縮放、往後傾斜。不管怎麼歪都被找到的點，平均後分數就高。</div>
+    </div>
+  </div>
+</section>
+
+<!-- 15 -->
+<section class="slide" data-wiki="superpoint" data-src="S4">
+  <h2>SuperPoint ②：一個網路同時找點和描述</h2>
+  <div class="body">
+    <div class="col">
+      <svg viewBox="0 0 600 220" width="600" height="220" role="img" aria-label="影像進入共用 encoder，再分成偵測 head 與描述 head" data-nocheck>
+        <defs><marker id="ar4" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs>
+        <g font-size="18" text-anchor="middle">
+          <rect x="0" y="80" width="110" height="60" rx="6" fill="var(--panel)" stroke="var(--rule)"/><text x="55" y="116">影像</text>
+          <path d="M150 50 L300 85 L300 135 L150 170 Z" fill="var(--panel)" stroke="var(--accent)" stroke-width="2"/><text x="222" y="116">共用 encoder</text>
+          <rect x="360" y="20" width="230" height="70" rx="6" fill="var(--panel)" stroke="var(--accent)" stroke-width="2"/><text x="475" y="50">偵測 head</text><text x="475" y="76" font-size="15">每 8×8 格輸出 65 個值</text>
+          <rect x="360" y="130" width="230" height="70" rx="6" fill="var(--panel)" stroke="var(--accent)" stroke-width="2"/><text x="475" y="160">描述 head</text><text x="475" y="186" font-size="15">256 維描述子</text>
+        </g>
+        <g stroke="var(--muted)" stroke-width="2.5" marker-end="url(#ar4)"><line x1="112" y1="110" x2="146" y2="110"/><line x1="302" y1="100" x2="356" y2="58"/><line x1="302" y1="120" x2="356" y2="162"/></g>
+      </svg>
+      <p class="small">65 個值 = 格內 64 個位置 ＋ 1 個「這格沒有點」。一次前向運算同時輸出兩者，在 Titan X GPU 上處理 480×640 影像約 13 ms（約 70 FPS）。</p>
+      <table>
+        <tr><th>HPatches 單應性估計（ε = 3 像素）</th><th class="num">正確率</th></tr>
+        <tr><td>SuperPoint</td><td class="num good">.684</td></tr>
+        <tr><td>SIFT</td><td class="num">.676</td></tr>
+        <tr><td>ORB</td><td class="num">.395</td></tr>
+      </table>
+    </div>
+    <div class="col narrow">
+      <p><b>能力是「設計的」還是「學來的」？</b></p>
+      <p>SIFT、ORB 都是<span class="hl">刻意設計</span>成旋轉不變。</p>
+      <p>SuperPoint 的能力來自訓練資料：遇到訓練時沒看過的<span class="badc">極端平面內旋轉</span>，就會失敗。</p>
+      <p class="small">另外，在最嚴格的 ε = 1 像素下，SIFT 仍是最好的，作者歸因於 SIFT 多做了次像素定位。</p>
+    </div>
+  </div>
+</section>
+
+<!-- 16 -->
+<section class="slide" data-wiki="metric-choice-pitfall,orb,superpoint" data-src="S4">
+  <h2>讀論文的陷阱 ②：最好的指標，不一定是你在乎的</h2>
+  <p class="lead">同一場實驗（HPatches），換一個指標，冠軍就換人。</p>
+  <div class="body">
+    <div class="col">
+      <table>
+        <tr><th>方法</th><th class="num">重複率</th><th class="num">單應性估計 ε = 3</th></tr>
+        <tr><td>ORB</td><td class="num good">.641（最高）</td><td class="num badc">.395（最低）</td></tr>
+        <tr><td>SuperPoint</td><td class="num">.581</td><td class="num good">.684（最高）</td></tr>
+        <tr><td>SIFT</td><td class="num">.495</td><td class="num">.676</td></tr>
+      </table>
+      <p class="small" style="margin-top:10px">重複率：兩張影像中，能在另一張的 ε 像素內找到對應點的比例。</p>
+    </div>
+    <div class="col narrow">
+      <p>ORB 找到的點常常<b>擠成一小團一小團</b>，用這些點去估單應性時，效果很差。</p>
+      <div class="lesson">作者的結論：只為了重複率去最佳化，不會讓後續的匹配或估計變好。<br>先問：這個指標是我真正在乎的結果，還是中間步驟？</div>
+      <div class="note"><b>比喻</b>就像只考「出席率」，每次都到不代表學會了。</div>
+    </div>
+  </div>
+</section>
+
+<!-- 17 -->
+<section class="slide" data-wiki="liftfeat,surface-normal" data-src="S5">
+  <h2>LiftFeat ①：2D 看不清時，借一點 3D</h2>
+  <div class="body">
+    <div class="col">
+      <p>在<b>光照劇變、低紋理、重複圖案</b>的場景，只靠 2D 外觀的描述子缺乏足夠資訊，容易配錯。</p>
+      <p>為什麼不用深度？</p>
+      <ul>
+        <li>單張影像估出的深度有<b>尺度模糊</b>，不適合直接匹配。</li>
+        <li><b>表面法向量</b>同時具有平移不變與尺度不變的性質。</li>
+      </ul>
+      <div class="note"><b>比喻</b>在牆上插一根垂直的牙籤，牙籤指的方向就是法向量；不管站多遠看，夾角都不變。尺度模糊是指只看一張照片，分不出「小模型放很近」還是「大房子放很遠」。</div>
+    </div>
+    <div class="col">
+      <p><b>從深度圖 Z 算出法向量</b></p>
+      <div class="formula" style="font-size:32px"><math display="block"><mi mathvariant="bold">n</mi><mo>=</mo><mfrac><mrow><mo>(</mo><mo>−</mo><mfrac><mrow><mo>∂</mo><mi>Z</mi></mrow><mrow><mo>∂</mo><mi>u</mi></mrow></mfrac><mo>,</mo><mo>−</mo><mfrac><mrow><mo>∂</mo><mi>Z</mi></mrow><mrow><mo>∂</mo><mi>v</mi></mrow></mfrac><mo>,</mo><mn>1</mn><mo>)</mo></mrow><mrow><mo>‖</mo><mo>(</mo><mo>−</mo><mfrac><mrow><mo>∂</mo><mi>Z</mi></mrow><mrow><mo>∂</mo><mi>u</mi></mrow></mfrac><mo>,</mo><mo>−</mo><mfrac><mrow><mo>∂</mo><mi>Z</mi></mrow><mrow><mo>∂</mo><mi>v</mi></mrow></mfrac><mo>,</mo><mn>1</mn><mo>)</mo><mo>‖</mo></mrow></mfrac></math></div>
+      <p class="small">先用相鄰像素的深度差估計深度梯度，再組成向量並正規化成長度 1。深度圖由預訓練模型 Depth Anything v2 產生，所以不需要額外的人工標註。</p>
+      <div class="note"><b>比喻</b>這和 Harris 的 <math><msub><mi>I</mi><mi>x</mi></msub></math>、<math><msub><mi>I</mi><mi>y</mi></msub></math> 很像，只是差分的對象從「亮度」換成了「深度」。</div>
+    </div>
+  </div>
+</section>
+
+<!-- 18 -->
+<section class="slide" data-wiki="liftfeat" data-src="S5">
+  <h2>LiftFeat ②：把法向量「融合」進描述子</h2>
+  <div class="body">
+    <div class="col">
+      <svg viewBox="0 0 600 200" width="600" height="200" role="img" aria-label="共用編碼後分成關鍵點、描述子、法向量三個 head，描述子與法向量進入 3D-GFL 融合" data-nocheck>
+        <defs><marker id="ar5" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs>
+        <g font-size="16" text-anchor="middle">
+          <rect x="0" y="70" width="110" height="60" rx="6" fill="var(--panel)" stroke="var(--accent)" stroke-width="2"/><text x="55" y="105">共用編碼</text>
+          <rect x="160" y="10" width="140" height="44" rx="6" fill="var(--panel)" stroke="var(--rule)"/><text x="230" y="38">關鍵點</text>
+          <rect x="160" y="78" width="140" height="44" rx="6" fill="var(--panel)" stroke="var(--rule)"/><text x="230" y="106">2D 描述子</text>
+          <rect x="160" y="146" width="140" height="44" rx="6" fill="var(--panel)" stroke="var(--rule)"/><text x="230" y="174">法向量</text>
+          <rect x="360" y="90" width="120" height="76" rx="6" fill="var(--panel)" stroke="var(--ok)" stroke-width="2.5"/><text x="420" y="124" font-weight="700">3D-GFL</text><text x="420" y="148" font-size="14">融合</text>
+          <rect x="510" y="98" width="90" height="60" rx="6" fill="var(--panel)" stroke="var(--rule)"/><text x="555" y="124">升級版</text><text x="555" y="146">描述子</text>
+        </g>
+        <g stroke="var(--muted)" stroke-width="2.2" marker-end="url(#ar5)"><line x1="112" y1="90" x2="156" y2="34"/><line x1="112" y1="100" x2="156" y2="100"/><line x1="112" y1="112" x2="156" y2="166"/><line x1="302" y1="104" x2="356" y2="116"/><line x1="302" y1="166" x2="356" y2="144"/><line x1="482" y1="128" x2="506" y2="128"/></g>
+      </svg>
+      <p class="small">3D-GFL：在每個關鍵點取出 2D 描述子與法向量，各自對齊維度後相加、加入位置資訊，再經過 3 層 self-attention 讓各點互相參考。</p>
+      <table>
+        <tr><th>消融實驗：夜間定位 (0.25m, 2°)</th><th class="num">成功率</th></tr>
+        <tr><td>只有關鍵點＋描述子</td><td class="num">78.9</td></tr>
+        <tr><td>＋法向量 head</td><td class="num">79.4</td></tr>
+        <tr><td>＋3D-GFL 融合</td><td class="num good">82.1</td></tr>
+      </table>
+    </div>
+    <div class="col narrow">
+      <table>
+        <tr><th>相對姿態估計 MegaDepth AUC@5°</th><th class="num">分數</th></tr>
+        <tr><td>LiftFeat</td><td class="num good">44.7</td></tr>
+        <tr><td>SuperPoint</td><td class="num">37.3</td></tr>
+        <tr><td>ORB</td><td class="num">17.9</td></tr>
+      </table>
+      <table>
+        <tr><th>行動 GPU（Xavier NX）</th><th class="num">ms</th></tr>
+        <tr><td>LiftFeat</td><td class="num good">7.4</td></tr>
+        <tr><td>SuperPoint</td><td class="num">36</td></tr>
+      </table>
+      <p class="small">只加法向量 head 進步很小，明確做融合後提升較多。數字採論文表格；論文內文有兩處與表格不一致，已記在 Wiki。</p>
+    </div>
+  </div>
+</section>
+
+<!-- 19 -->
+<section class="slide" data-wiki="harris-corner,sift,orb,superpoint,liftfeat,surface-normal" data-src="S7,S2,S3,S4,S5">
+  <h2>總結：從人設計規則，到讓網路自己學</h2>
+  <svg viewBox="0 0 1136 80" width="1136" height="80" role="img" aria-label="時間軸：1988 Harris、2004 SIFT、2011 ORB、2018 SuperPoint、2025 LiftFeat">
+    <line x1="40" y1="30" x2="1096" y2="30" stroke="var(--rule)" stroke-width="3"/>
+    <g fill="var(--point)"><circle cx="80" cy="30" r="10"/><circle cx="330" cy="30" r="10"/><circle cx="580" cy="30" r="10"/><circle cx="830" cy="30" r="10"/><circle cx="1060" cy="30" r="10"/></g>
+    <g font-size="19" text-anchor="middle"><text x="80" y="68">1988 Harris</text><text x="330" y="68">2004 SIFT</text><text x="580" y="68">2011 ORB</text><text x="830" y="68">2018 SuperPoint</text><text x="1060" y="68">2025 LiftFeat</text></g>
+  </svg>
+  <table style="margin-top:10px">
+    <tr><th>方法</th><th>怎麼找點</th><th>怎麼描述</th><th>強項</th><th>弱點</th></tr>
+    <tr><td>Harris</td><td>角點分數 R</td><td>（只偵測）</td><td>後來的 ORB 仍借用它排序</td><td>怕縮放</td></tr>
+    <tr><td>SIFT</td><td>DoG 尺度空間極值</td><td>128 維梯度方向統計</td><td>縮放、旋轉不變</td><td>計算量大</td></tr>
+    <tr><td>ORB</td><td>FAST＋Harris 排序</td><td>256 位元 rBRIEF</td><td>比 SIFT 快兩個數量級以上</td><td>尺度處理較弱</td></tr>
+    <tr><td>SuperPoint</td><td colspan="2">一個網路同時輸出點與 256 維描述子（自監督訓練）</td><td>光照變化下特別有效</td><td>沒見過的極端旋轉會失敗</td></tr>
+    <tr><td>LiftFeat</td><td colspan="2">網路＋表面法向量，融合成 64 維描述子</td><td>極端場景、輕量</td><td>法向量標籤品質取決於深度模型</td></tr>
+  </table>
+  <p class="small" style="margin-top:12px">不變的是那三步：偵測、描述、匹配。變的是每一步「由誰決定」：從人寫規則，到從資料裡學。</p>
+</section>
+
+<!-- 20 -->
+<section class="slide" data-wiki="s1-opencv-features,s2-sift,s3-orb,s4-superpoint,s5-liftfeat,s7-opencv-harris" data-src="S1,S2,S3,S4,S5,S7">
+  <h2>參考資料</h2>
+  <ul style="font-size:20px">
+    <li>[S1] OpenCV Tutorial: Understanding Features. docs.opencv.org</li>
+    <li>[S2] D. G. Lowe (2004). Distinctive Image Features from Scale-Invariant Keypoints. IJCV 60(2).</li>
+    <li>[S3] E. Rublee, V. Rabaud, K. Konolige, G. Bradski (2011). ORB: An efficient alternative to SIFT or SURF. ICCV.</li>
+    <li>[S4] D. DeTone, T. Malisiewicz, A. Rabinovich (2018). SuperPoint: Self-Supervised Interest Point Detection and Description. CVPRW.</li>
+    <li>[S5] Y. Liu et al. (2025). LiftFeat: 3D Geometry-Aware Local Feature Matching. ICRA.</li>
+    <li>[S7] OpenCV Tutorial: Harris Corner Detection. docs.opencv.org</li>
+  </ul>
+  <p class="small" style="margin-top:16px">S6（Ma et al. 綜述）經討論後未納入。所有內容都整理自本專案的 LLM Wiki；標示「比喻」的方框，以及左側有直線的「提醒」，含有為初學者加的白話詮釋，不是論文原文。</p>
+  <p style="margin-top:14px"><a href="../wiki/" style="color:var(--accent)">前往 LLM Wiki</a></p>
+</section>
+
+</div></div>
+
+<nav id="chrome" aria-label="投影片導覽">
+  <button class="nav" id="prev" aria-label="上一張">上一張</button>
+  <div id="dots"></div>
+  <button class="nav" id="next" aria-label="下一張">下一張</button>
+  <span id="count"></span>
+</nav>
+
+<script>
+(function(){
+  const slides=[...document.querySelectorAll('.slide')];
+  const stage=document.getElementById('stage');
+  const dots=document.getElementById('dots');
+  const count=document.getElementById('count');
+  let cur=0;
+  // 頁尾：由 data-src / data-wiki 自動產生，確保畫面標示與檢查用的中繼資料一致
+  slides.forEach((s,i)=>{
+    const f=document.createElement('div'); f.className='foot';
+    const src=s.dataset.src?('來源 '+s.dataset.src.split(',').join('、')):'';
+    const wiki=s.dataset.wiki?('Wiki：'+s.dataset.wiki.split(',').join('、')):'';
+    f.innerHTML='<span>'+src+'｜'+wiki+'</span><span>'+(i+1)+' / '+slides.length+'</span>';
+    f.setAttribute('data-nocheck','');
+    s.appendChild(f);
+    s.id='s'+(i+1);
+    const b=document.createElement('button'); b.setAttribute('aria-label','第 '+(i+1)+' 張');
+    b.addEventListener('click',()=>go(i)); dots.appendChild(b);
+  });
+  function fit(){
+    const chromeH=document.getElementById('chrome').offsetHeight+8;
+    const w=window.innerWidth, h=window.innerHeight-chromeH;
+    const k=Math.min(w/1280,h/720);
+    stage.style.transform='translate(-50%, calc(-50% - '+(chromeH/2)+'px)) scale('+k+')';
+  }
+  function go(i,push=true){
+    cur=Math.max(0,Math.min(slides.length-1,i));
+    slides.forEach((s,j)=>s.classList.toggle('active',j===cur));
+    [...dots.children].forEach((d,j)=>{d.classList.toggle('cur',j===cur);d.classList.toggle('seen',j<cur);});
+    count.textContent=(cur+1)+' / '+slides.length;
+    if(push && location.hash!=='#s'+(cur+1)) history.replaceState(null,'','#s'+(cur+1));
+  }
+  function fromHash(){const m=location.hash.match(/^#s(\d+)$/);go(m?parseInt(m[1],10)-1:0,false);}
+  document.getElementById('prev').onclick=()=>go(cur-1);
+  document.getElementById('next').onclick=()=>go(cur+1);
+  addEventListener('keydown',e=>{
+    if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();go(cur+1);}
+    else if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();go(cur-1);}
+    else if(e.key==='Home')go(0); else if(e.key==='End')go(slides.length-1);
+  });
+  let x0=null;
+  addEventListener('touchstart',e=>{x0=e.touches[0].clientX},{passive:true});
+  addEventListener('touchend',e=>{if(x0===null)return;const dx=e.changedTouches[0].clientX-x0;if(Math.abs(dx)>50)go(cur+(dx<0?1:-1));x0=null;});
+  addEventListener('resize',fit); addEventListener('hashchange',fromHash);
+  fit(); fromHash();
+})();
+</script>
+</body>
+</html>

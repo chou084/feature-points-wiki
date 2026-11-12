@@ -1,0 +1,978 @@
+
+<!doctype html>
+<html lang="zh-TW" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../workflow/">
+      
+      
+        <link rel="next" href="../reflection/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>執行與檢查紀錄 - 特徵點 LLM Wiki</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#_1" class="md-skip">
+          跳轉到
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="頁首">
+    <a href=".." title="特徵點 LLM Wiki" class="md-header__button md-logo" aria-label="特徵點 LLM Wiki" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            特徵點 LLM Wiki
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              執行與檢查紀錄
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜尋" placeholder="搜尋" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="搜尋">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清除" aria-label="清除" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜尋引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="導覽列" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="特徵點 LLM Wiki" class="md-nav__button md-logo" aria-label="特徵點 LLM Wiki" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    特徵點 LLM Wiki
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首頁
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../slides/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    教學簡報
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../wiki/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wiki 目錄
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../wiki/log/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    操作紀錄
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Loop / Graph 設計
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    執行與檢查紀錄
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    執行與檢查紀錄
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目錄">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目錄
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#wiki" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Wiki 建置階段
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Wiki 建置階段">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        目前觀察（反思素材，之後整理）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        簡報生成階段
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reflection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    反思
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目錄">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目錄
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#wiki" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Wiki 建置階段
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Wiki 建置階段">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        目前觀察（反思素材，之後整理）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        簡報生成階段
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="_1">執行與檢查紀錄<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<p>如實記錄每個節點的檢查結果：通過／失敗、錯在哪、退回到哪一步、怎麼修。</p>
+<h2 id="wiki">Wiki 建置階段<a class="headerlink" href="#wiki" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>節點</th>
+<th>結果</th>
+<th>說明</th>
+<th>退回到</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>取得資料 S1</td>
+<td>✅ 通過</td>
+<td>OpenCV 教學頁可正常讀取</td>
+<td>—</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Ingest S1：討論</td>
+<td>⚠ 發現缺口</td>
+<td>使用者要求講公式，S1 沒有 → 不能自行補</td>
+<td>取得資料（新增 S7）</td>
+</tr>
+<tr>
+<td>3</td>
+<td>取得資料 S7</td>
+<td>✅ 通過</td>
+<td>討論時只讀了搜尋摘要；寫入前完整讀全文核對公式</td>
+<td>—</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Ingest S1 + S7：寫入</td>
+<td>✅ 完成</td>
+<td>新增 2 個來源頁、5 個概念頁</td>
+<td>—</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Lint #1（自動）</td>
+<td>✅ 0 問題</td>
+<td>另外用故意寫錯的頁面驗證 lint 有效</td>
+<td>—</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Lint #1（人工：術語）</td>
+<td>❌ 3 問題</td>
+<td>泰勒展開、det/trace、次像素沒有白話解釋</td>
+<td>Ingest（補 💡 白話詮釋）</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Lint #1 重跑</td>
+<td>✅ 0 問題</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td>8</td>
+<td>取得資料 S2</td>
+<td>✅ 通過</td>
+<td>直接讀完整 PDF 全文（28 頁），不只看摘要</td>
+<td>—</td>
+</tr>
+<tr>
+<td>9</td>
+<td><strong>流程修改 #1</strong></td>
+<td>—</td>
+<td>因第 6 列的問題，把「列出新術語與白話解釋來源」移到 Ingest 的討論步驟，從 S2 開始實施</td>
+<td>—</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Ingest S2：討論</td>
+<td>✅</td>
+<td>列出 7 個重點與術語清單；使用者決定範圍與公式深度</td>
+<td>—</td>
+</tr>
+<tr>
+<td>11</td>
+<td>Ingest S2：寫入</td>
+<td>✅ 完成</td>
+<td>新增 1 來源頁、3 概念頁，更新 3 頁</td>
+<td>—</td>
+</tr>
+<tr>
+<td>12</td>
+<td>Lint #2（自動）</td>
+<td>✅ 0 問題</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td>13</td>
+<td>Lint #2（人工：術語）</td>
+<td>❌ 2 問題</td>
+<td>主曲率、LoG 未解釋。討論清單是在「讀論文時」列的，寫頁面時才冒出這兩個詞</td>
+<td>Ingest（補 💡）</td>
+</tr>
+<tr>
+<td>14</td>
+<td>Lint #2 重跑</td>
+<td>✅ 0 問題</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td>15</td>
+<td>取得資料 S3（ORB 原論文）</td>
+<td>❌ 失敗</td>
+<td>3 個全文來源都拿不到：willowgarage 連結失效（站已關）、chubu.ac.jp 禁止自動存取、Scribd 只有片段</td>
+<td>暫停，請使用者決定替代方案</td>
+</tr>
+<tr>
+<td>16</td>
+<td>取得資料 S3（重試）</td>
+<td>✅ 通過</td>
+<td>使用者從 IEEE Xplore 下載全文上傳。發現 PDF 文字抽取把公式弄亂（如 atan2(m01,m10) 變成亂碼）→ 公式改以頁面影像核對</td>
+<td>—</td>
+</tr>
+<tr>
+<td>17</td>
+<td>版權檢查</td>
+<td>⚠ 修正</td>
+<td>原本建議把 PDF 放進 repo 的 raw/；但 IEEE 下載授權不允許公開散布 → 改為 PDF 只留本機、加入 .gitignore</td>
+<td>—</td>
+</tr>
+<tr>
+<td>18</td>
+<td>Ingest S3：討論</td>
+<td>✅</td>
+<td>在討論階段就發現 S2/S3 雜訊結論衝突（以往要到 lint 才會查矛盾）；使用者決定做成教學投影片</td>
+<td>—</td>
+</tr>
+<tr>
+<td>19</td>
+<td>Ingest S3：寫入</td>
+<td>✅ 完成</td>
+<td>新增 1 來源頁、3 概念頁，更新 5 頁</td>
+<td>—</td>
+</tr>
+<tr>
+<td>20</td>
+<td>Lint #3（自動）</td>
+<td>❌ 5 問題</td>
+<td>3 真錯誤＋2 誤報（lint 規則太嚴：表頭、導覽句）</td>
+<td>Ingest（修內容）＋ 修 lint 腳本</td>
+</tr>
+<tr>
+<td>21</td>
+<td>修正動作本身</td>
+<td>❌ 1 次</td>
+<td>替換字串沒對準原文，被腳本的 assert 擋下，未寫壞</td>
+<td>重做</td>
+</tr>
+<tr>
+<td>22</td>
+<td>Lint #3 重跑</td>
+<td>✅ 0 問題</td>
+<td>並驗證修改後的 lint 仍抓得到漏標</td>
+<td>—</td>
+</tr>
+<tr>
+<td>23</td>
+<td>Lint #3（人工：術語）</td>
+<td>❌ 3 問題</td>
+<td>數量級、SURF、暴力匹配；全在實驗結果段</td>
+<td>Ingest（補說明）</td>
+</tr>
+<tr>
+<td>24</td>
+<td>取得資料 S4</td>
+<td>✅ 通過</td>
+<td>arXiv 全文（含附錄）可直接讀取</td>
+<td>—</td>
+</tr>
+<tr>
+<td>25</td>
+<td><strong>流程修改 #2</strong></td>
+<td>—</td>
+<td>依第 23 列的規律，討論時的術語清單改成同時掃「方法」與「實驗結果」段</td>
+<td>—</td>
+</tr>
+<tr>
+<td>26</td>
+<td>Ingest S4：討論＋寫入</td>
+<td>✅ 完成</td>
+<td>交叉檢查又找到一個教學例子（指標選擇）；新增 1 來源頁、4 概念頁，更新 5 頁</td>
+<td>—</td>
+</tr>
+<tr>
+<td>27</td>
+<td>Lint #4（自動）</td>
+<td>❌ 7 問題</td>
+<td>全是同一原因：來源標在表頭 → 規則與 lint 不一致</td>
+<td>修 schema（AGENTS.md）＋ lint</td>
+</tr>
+<tr>
+<td>28</td>
+<td>Lint #4（人工：術語）</td>
+<td>❌ 2 問題</td>
+<td>插值、GPU；實驗段術語這次無漏網</td>
+<td>Ingest（補說明）</td>
+</tr>
+<tr>
+<td>29</td>
+<td>範圍調整</td>
+<td>—</td>
+<td>使用者決定跳過 S6 綜述（已達 5 篇門檻）</td>
+<td>—</td>
+</tr>
+<tr>
+<td>30</td>
+<td>取得資料 S5</td>
+<td>✅ 通過</td>
+<td>arXiv 全文；文字抽取把公式 (1) 重複了一次（抽取瑕疵，非原文）</td>
+<td>—</td>
+</tr>
+<tr>
+<td>31</td>
+<td>Ingest S5：討論（交叉檢查）</td>
+<td>⚠ 發現來源內部不一致</td>
+<td>內文說夜間 (0.25m/1°) 由 77.6% 升到 82.4%，但表 III 是 (0.25m, 2°) 且數值 82.1；「比 SuperPoint 快 5 倍」只在 GPU 成立（CPU 約 3.7 倍）</td>
+<td>Wiki 採表格數值並標 ⚠（使用者同意）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_2">目前觀察（反思素材，之後整理）<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li>「術語沒解釋」是自動 lint 抓不到的，只能靠人工 → 之後考慮在 ingest 的「討論」步驟就先列出新術語。</li>
+<li>討論階段若只看搜尋摘要，可能漏掉細節 → 寫入前要再讀全文。</li>
+<li>流程修改 #1 有效但不完整：術語問題從 3 個降到 2 個。漏掉的詞是「寫頁面時」才出現的 → 術語檢查不能只放在討論，寫完後的人工檢查仍要保留。</li>
+<li>術語漏網的位置有規律：S2 是寫作時冒出的詞，S3 全在「實驗結果」段（方法名、數量級）。討論時的術語清單偏重「方法」段落。</li>
+<li>矛盾檢查（lint b）往前移到討論階段很有效：S3 的衝突在寫入前就被發現，還變成了一張教學投影片。</li>
+<li>lint 本身也會錯（誤報）。每次修改 lint 都要用故意寫錯的資料重新驗證。
+| 32 | Ingest S5：寫入 | ✅ 完成 | 新增 1 來源頁、2 概念頁，更新 3 頁 | — |
+| 33 | Lint #5（自動） | ✅ 0 問題 | 第一次就通過（S2～S4 累積的修正在這裡見效：表頭規則、先標來源） | — |
+| 34 | Lint #5（人工：術語） | ❌ 2 問題 | 相對姿態估計、XFeat；集中在實驗段 | Ingest（補說明） |</li>
+</ul>
+<h2 id="_3">簡報生成階段<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>節點</th>
+<th>結果</th>
+<th>說明</th>
+<th>退回到</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>35</td>
+<td>⑥ 查詢 Wiki → 大綱</td>
+<td>✅</td>
+<td>20 張，每張標註依據的 Wiki 頁</td>
+<td>—</td>
+</tr>
+<tr>
+<td>36</td>
+<td>⑦ 大綱檢查</td>
+<td>✅ 通過</td>
+<td>使用者確認大綱；所有依據頁面都存在</td>
+<td>—</td>
+</tr>
+<tr>
+<td>37</td>
+<td>⑧ 生成投影片</td>
+<td>✅ 完成</td>
+<td>公式改用 MathML（不依賴 CDN，離線也能檢查渲染）</td>
+<td>—</td>
+</tr>
+<tr>
+<td>38</td>
+<td>⑨ 事實回溯（自動）</td>
+<td>❌ 14 問題</td>
+<td>13 個來自同一原因：第 20 張（參考資料）的 data-wiki 標成 feature-point，應標 6 個來源頁</td>
+<td>生成投影片</td>
+</tr>
+<tr>
+<td>39</td>
+<td><strong>檢查工具修正</strong></td>
+<td>⚠</td>
+<td>發現 check_slides.py 用子字串比對太鬆（「4」到處都找得到）→ 改為前後不可接數字；1–19 張在新規則下仍通過</td>
+<td>自我驗證</td>
+</tr>
+<tr>
+<td>40</td>
+<td>⑨ 事實回溯（自動）重跑</td>
+<td>❌ 1 問題</td>
+<td>「2021」（S6 年份）Wiki 沒有記錄 → 刪除</td>
+<td>生成投影片</td>
+</tr>
+<tr>
+<td>41</td>
+<td>檢查工具自我驗證</td>
+<td>✅</td>
+<td>故意把 15.3 改成 15.8、128 改成 126，兩個都被抓到</td>
+<td>—</td>
+</tr>
+<tr>
+<td>42</td>
+<td>⑨ 事實回溯（人工：敘述）</td>
+<td>❌ 5 問題</td>
+<td>Wiki 中標為 💡 的白話詮釋在投影片上被寫成事實（3 處）、Harris 強項「直覺、簡單」無來源、提醒框未標示含詮釋</td>
+<td>生成投影片</td>
+</tr>
+<tr>
+<td>43</td>
+<td>⑩ 渲染（自動）</td>
+<td>❌ 1 問題</td>
+<td>第 5 張公式過寬，框內出現捲軸</td>
+<td>生成投影片</td>
+</tr>
+<tr>
+<td>44</td>
+<td>⑩ 渲染（截圖人工）</td>
+<td>❌ 1＋1 誤報</td>
+<td>第 17 張「I_y」以純文字顯示 → 改 MathML；截圖偏淡是截圖時淡入動畫未結束（檢查工具的問題，非簡報）</td>
+<td>生成投影片／修檢查工具</td>
+</tr>
+<tr>
+<td>45</td>
+<td>⑩ 渲染（截圖人工：手機）</td>
+<td>❌ 嚴重</td>
+<td>手機直式整張空白：格線置中在投影片比螢幕寬時失效，投影片被推到畫面外。<strong>自動檢查只測了桌面尺寸，所以沒抓到</strong></td>
+<td>生成投影片＋補檢查</td>
+</tr>
+<tr>
+<td>46</td>
+<td><strong>檢查工具修正</strong></td>
+<td>⚠</td>
+<td>check_render.py 加入 4 種螢幕（桌面、大螢幕、手機直式、手機橫式）；用修正前的版本驗證，新檢查能抓到直式與橫式兩個錯</td>
+<td>自我驗證</td>
+</tr>
+<tr>
+<td>47</td>
+<td>⑩ 渲染重跑</td>
+<td>✅ 0 問題</td>
+<td>20 張、17 個公式、4 種螢幕</td>
+<td>—</td>
+</tr>
+<tr>
+<td>48</td>
+<td>流程圖</td>
+<td>✅</td>
+<td>mermaid 原始檔以 mermaid-cli 轉成 SVG（同時驗證語法）</td>
+<td>—</td>
+</tr>
+<tr>
+<td>49</td>
+<td>網站建置</td>
+<td>✅</td>
+<td><code>mkdocs build --strict</code> 無警告；網站內連結（首頁、簡報 → Wiki）檢查通過</td>
+<td>—</td>
+</tr>
+<tr>
+<td>50</td>
+<td><strong>尚未驗證</strong></td>
+<td>⚠</td>
+<td>Wiki 頁面的公式用 MathJax（需要網路），本機離線無法驗證；部署後請開 Harris、SIFT 頁確認公式有顯示。簡報的公式是 MathML，已驗證</td>
+<td>部署後人工確認</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u8907\u88fd", "clipboard.copy": "\u8907\u88fd", "search.result.more.one": "\u6b64\u9801\u5c1a\u6709 1 \u500b\u7b26\u5408\u7684\u9805\u76ee", "search.result.more.other": "\u6b64\u9801\u5c1a\u6709 # \u500b\u7b26\u5408\u7684\u9805\u76ee", "search.result.none": "\u6c92\u6709\u7b26\u5408\u7684\u9805\u76ee", "search.result.one": "\u627e\u5230 1 \u500b\u7b26\u5408\u7684\u9805\u76ee", "search.result.other": "\u627e\u5230 # \u500b\u7b26\u5408\u7684\u9805\u76ee", "search.result.placeholder": "\u6253\u5b57\u9032\u884c\u641c\u5c0b", "search.result.term.missing": "\u7f3a\u5c11\u5b57\u8a5e", "select.version": "\u9078\u64c7\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

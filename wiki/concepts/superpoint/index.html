@@ -1,0 +1,644 @@
+
+<!doctype html>
+<html lang="zh-TW" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>SuperPoint - 特徵點 LLM Wiki</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#superpoint" class="md-skip">
+          跳轉到
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="頁首">
+    <a href="../../.." title="特徵點 LLM Wiki" class="md-header__button md-logo" aria-label="特徵點 LLM Wiki" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            特徵點 LLM Wiki
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              SuperPoint
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜尋" placeholder="搜尋" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="搜尋">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清除" aria-label="清除" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜尋引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="導覽列" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="特徵點 LLM Wiki" class="md-nav__button md-logo" aria-label="特徵點 LLM Wiki" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    特徵點 LLM Wiki
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首頁
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../slides/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    教學簡報
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wiki 目錄
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../log/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    操作紀錄
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Loop / Graph 設計
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../run-log/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    執行與檢查紀錄
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reflection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    反思
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目錄">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目錄
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        一句話定義
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        直覺解釋
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        重點
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        限制／常見誤解
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        相關頁面
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="superpoint">SuperPoint<a class="headerlink" href="#superpoint" title="Permanent link">&para;</a></h1>
+<h2 id="_1">一句話定義<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>2018 年提出、用一個神經網路同時輸出特徵點位置與描述子的方法，以自監督方式訓練。[S4]</p>
+<h2 id="_2">直覺解釋<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>SIFT、ORB 的每個步驟都是人設計的規則；SuperPoint 則讓卷積神經網路從資料中學會「哪裡是好的點、怎麼描述它」。[S4] 卷積神經網路在幾乎所有以影像為輸入的任務上都勝過人工設計的表示。[S4]</p>
+<blockquote>
+<p>💡 白話詮釋（非來源原文）：卷積神經網路（CNN）是一種很擅長處理影像的深度學習模型，由很多層小濾波器堆疊而成，能自己學出要看哪些圖案。</p>
+</blockquote>
+<h2 id="_3">重點<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p><strong>訓練三階段</strong> [S4]
+1. <strong>MagicPoint</strong>：在合成資料集 Synthetic Shapes（三角形、四邊形、線段、橢圓等，角點位置毫無歧義）上訓練偵測器。[S4]
+2. <strong>Homographic Adaptation</strong>：把沒有標註的真實照片（MS-COCO）用隨機<a href="../homography/">單應性</a>扭曲很多次，各自偵測後轉回原圖再平均，得到偽標籤。[S4]
+3. <strong>聯合訓練</strong>：用扭曲前後的影像對，同時訓練偵測與描述。[S4]</p>
+<div class="arithmatex">\[\hat{F}(I; f_\theta) = \frac{1}{N_h}\sum_{i=1}^{N_h} \mathcal{H}_i^{-1}\, f_\theta\big(\mathcal{H}_i(I)\big)\]</div>
+<table>
+<thead>
+<tr>
+<th>符號</th>
+<th>白話意思</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(f_\theta\)</span></td>
+<td>原本的偵測器 [S4]</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\mathcal{H}_i(I)\)</span></td>
+<td>用第 i 個隨機單應性扭曲影像 I [S4]</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\mathcal{H}_i^{-1}\)</span></td>
+<td>把偵測結果轉回原圖座標 [S4]</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(N_h\)</span></td>
+<td>扭曲的次數 [S4]</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>做 100 次比完全不做，<a href="../metric-choice-pitfall/">重複率</a>提升 21%；做到 1000 次只提升 22%，超過 100 次效益很小。[S4]</li>
+</ul>
+<blockquote>
+<p>💡 白話詮釋（非來源原文）：一個點如果不管照片怎麼歪、怎麼縮放都被找到，平均後分數就高；只在某個角度偶然被找到的點，平均後就被淡化。</p>
+</blockquote>
+<p><strong>架構</strong> [S4]
+- 一個共用的 encoder 先縮小影像，接著分成兩個 head：偵測 head 和描述 head；大部分參數由兩個任務共用。[S4]
+- 影像被切成 8×8 像素的格子（cell）；偵測 head 對每格輸出 65 個值：64 個代表格內每個位置、1 個代表「這格沒有點」（dustbin）。[S4]
+- 描述 head 每 8 像素輸出一個 256 維描述子，再插值到需要的位置並正規化成長度 1。[S4]
+- 一次前向運算同時輸出點與描述子；在 Titan X GPU 上處理 480×640 影像約 13 ms（約 70 FPS）。[S4]</p>
+<blockquote>
+<p>💡 白話詮釋（非來源原文）：encoder 是負責「看懂影像、抽出特徵」的前半段網路；head 是接在後面、各自負責一項工作的小網路。「前向運算」就是把影像丟進網路算一次。「插值」是由已知格點的值推算中間位置的值。GPU 是擅長大量平行計算的顯示卡晶片，神經網路通常靠它加速。FPS 是每秒能處理幾張畫面。</p>
+</blockquote>
+<p><strong>實驗結果</strong>（HPatches 資料集，單應性估計正確率，ε 為容許誤差像素）[S4]</p>
+<table>
+<thead>
+<tr>
+<th>方法 [S4]</th>
+<th>ε = 1</th>
+<th>ε = 3</th>
+<th>ε = 5</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SuperPoint</td>
+<td>.310</td>
+<td>.684</td>
+<td>.829</td>
+</tr>
+<tr>
+<td>SIFT</td>
+<td>.424</td>
+<td>.676</td>
+<td>.759</td>
+</tr>
+<tr>
+<td>LIFT</td>
+<td>.284</td>
+<td>.598</td>
+<td>.717</td>
+</tr>
+<tr>
+<td>ORB</td>
+<td>.150</td>
+<td>.395</td>
+<td>.538</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>SuperPoint 勝過 LIFT 與 ORB，和 SIFT 相當；在光照變化下特別有效。[S4]</li>
+<li>SIFT 在最嚴格的 ε = 1 表現最好，作者認為是因為 SIFT 多做了次像素定位。[S4]</li>
+<li>在合成圖形加雜訊時，MagicPoint 的 mAP 仍有 0.971，Harris 只剩 0.213、FAST 只剩 0.061。[S4]</li>
+</ul>
+<blockquote>
+<p>💡 白話詮釋（非來源原文）：HPatches 是常用的公開測試資料集，有光照變化與視角變化兩類場景。mAP 是 0 到 1 的偵測準確度綜合分數，越高越好。LIFT 是另一個早期的深度學習特徵方法。</p>
+</blockquote>
+<h2 id="_4">限制／常見誤解<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<ul>
+<li>遇到訓練時沒看過的極端平面內旋轉會失敗；SIFT、ORB 是刻意設計旋轉不變，SuperPoint 的能力則取決於訓練資料。[S4]</li>
+<li>需要 GPU 才能達到論文中的即時速度。[S4]</li>
+<li>MagicPoint 抗雜訊的結果只在合成圖形上測得。[S4]</li>
+<li>後來的 <a href="../liftfeat/">LiftFeat</a> 沿用了 SuperPoint 的 65 通道關鍵點 head；在 LiftFeat 的比較中，LiftFeat 在行動 GPU 上比 SuperPoint 快約 4.9 倍（36 → 7.4 ms）。[S5]</li>
+</ul>
+<h2 id="_5">相關頁面<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<p><a href="../self-supervised-learning/">自監督學習</a>・<a href="../homography/">單應性</a>・<a href="../sift/">SIFT</a>・<a href="../orb/">ORB</a>・<a href="../feature-detection/">特徵偵測</a>・<a href="../feature-description/">特徵描述</a>・<a href="../metric-choice-pitfall/">指標選擇的陷阱</a>・<a href="../liftfeat/">LiftFeat</a></p>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": [], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u8907\u88fd", "clipboard.copy": "\u8907\u88fd", "search.result.more.one": "\u6b64\u9801\u5c1a\u6709 1 \u500b\u7b26\u5408\u7684\u9805\u76ee", "search.result.more.other": "\u6b64\u9801\u5c1a\u6709 # \u500b\u7b26\u5408\u7684\u9805\u76ee", "search.result.none": "\u6c92\u6709\u7b26\u5408\u7684\u9805\u76ee", "search.result.one": "\u627e\u5230 1 \u500b\u7b26\u5408\u7684\u9805\u76ee", "search.result.other": "\u627e\u5230 # \u500b\u7b26\u5408\u7684\u9805\u76ee", "search.result.placeholder": "\u6253\u5b57\u9032\u884c\u641c\u5c0b", "search.result.term.missing": "\u7f3a\u5c11\u5b57\u8a5e", "select.version": "\u9078\u64c7\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
