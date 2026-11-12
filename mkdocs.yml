@@ -1,0 +1,21 @@
+site_name: 特徵點 LLM Wiki
+theme:
+  name: material
+  language: zh-TW
+markdown_extensions:
+  - admonition
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
+extra_javascript:
+  - https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js
+nav:
+  - 首頁: index.md
+  - 教學簡報: slides/index.html
+  - Wiki 目錄: wiki/index.md
+  - 操作紀錄: wiki/log.md
+  - Loop / Graph 設計: workflow.md
+  - 執行與檢查紀錄: run-log.md
+  - 反思: reflection.md
